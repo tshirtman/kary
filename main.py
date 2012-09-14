@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import kivy
 kivy.require('1.0.7')
 
@@ -11,44 +12,44 @@ from kivy.factory import Factory
 from kivy.graphics.fbo import Fbo
 from kivy.graphics import RenderContext
 from kivy.lang import Builder
-from kivy.properties import StringProperty, ObjectProperty, NumericProperty, \
-        BooleanProperty
+from kivy.properties import (StringProperty, ObjectProperty, NumericProperty,
+                             BooleanProperty)
 from kivy.resources import resource_add_path
 from kivy.uix.floatlayout import FloatLayout
 
 Builder.load_string('''
 <SlideShaderContainer>:
-	canvas:
-		Rectangle:
-			pos: self.pos
-			size: self.size
-			texture: self.fbo_texture
+    canvas:
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            texture: self.fbo_texture
 
 <Slides>:
-	container1: container1
-	container2: container2
+    container1: container1
+    container2: container2
 
     SlidesBackground:
         slides: root
 
-	SlideShaderContainer:
-		id: container1
-		size_hint_y: None
-		height: root.height - 35
-		y: 35
+    SlideShaderContainer:
+        id: container1
+        size_hint_y: None
+        height: root.height - 35
+        y: 35
 
-	SlideShaderContainer:
-		id: container2
-		size_hint_y: None
-		height: root.height - 35
-		y: 35
+    SlideShaderContainer:
+        id: container2
+        size_hint_y: None
+        height: root.height - 35
+        y: 35
 
     SlidesForeground:
         slides: root
 
 
 <Slide>:
-	pos_hint: {'x': 0, 'y': 0}
+    pos_hint: {'x': 0, 'y': 0}
 
 ''')
 
@@ -66,6 +67,7 @@ void main (void) {
   gl_Position = projection_mat * modelview_mat * vec4(p, 0.0, 1.0);
 }
 '''
+
 
 class SlideShaderContainer(FloatLayout):
     # (internal) This class is used to animate Slide instance.
@@ -192,7 +194,7 @@ class Slides(FloatLayout):
         # down
         if scancode == 273:
             self.old_index = self.index
-            for index in xrange(self.index+1, self.max_index):
+            for index in xrange(self.index + 1, self.max_index):
                 slide = self.slides[index]
                 if slide.is_section:
                     self.index = index
@@ -201,7 +203,7 @@ class Slides(FloatLayout):
         # up
         if scancode == 274:
             self.old_index = self.index
-            for index in xrange(self.index-1, -1, -1):
+            for index in xrange(self.index - 1, -1, -1):
                 slide = self.slides[index]
                 if slide.is_section:
                     self.index = index
@@ -246,12 +248,6 @@ class Slides(FloatLayout):
         self.container2.alpha = d
         Animation(alpha=0., d=.3, t='out_quad').start(self.container2)
         self.slides[index].active = True
-        if old_index != -1:
-            self.container1.clear_widgets()
-            self.container1.add_widget(self.slides[old_index])
-            self.container1.alpha = 0.
-            Animation(alpha=-d, d=.3, t='out_quad').start(self.container1)
-            self.slides[old_index].active = False
 
 
 class SlidesViewer(App):
@@ -260,14 +256,17 @@ class SlidesViewer(App):
 
     def build(self):
         filename = self.options['filename']
+
         if isdir(filename):
             directory = filename
             filename = join(filename, 'presentation.kv')
         else:
             directory = dirname(filename)
+
         sys.path += [directory]
         resource_add_path(directory)
         template_fn = join(directory, 'templates.kv')
+
         if exists(template_fn):
             Builder.load_file(template_fn)
         return Builder.load_file(filename)
