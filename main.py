@@ -1,5 +1,7 @@
 #!/usr/bin/env python
+from kivy.config import Config
 
+Config.set('graphics', 'fullscreen', 'fake')
 import kivy
 kivy.require('1.0.7')
 
@@ -26,27 +28,18 @@ Builder.load_string('''
             texture: self.fbo_texture
 
 <Slides>:
-    container1: container1
-    container2: container2
+    container: container
+    background: background
 
     SlidesBackground:
+        id: background
         slides: root
 
     SlideShaderContainer:
-        id: container1
+        id: container
         size_hint_y: None
         height: root.height - 35
         y: 35
-
-    SlideShaderContainer:
-        id: container2
-        size_hint_y: None
-        height: root.height - 35
-        y: 35
-
-    SlidesForeground:
-        slides: root
-
 
 <Slide>:
     pos_hint: {'x': 0, 'y': 0}
@@ -126,6 +119,9 @@ class SlidesBackground(FloatLayout):
     #: Property that will contain the Slides instance
     slides = ObjectProperty(None)
 
+    #: Time
+    time = NumericProperty(0)
+
 
 class SlidesForeground(FloatLayout):
     '''Widget used as a foreground of :class:`Slides` instance.
@@ -154,11 +150,11 @@ class Slides(FloatLayout):
     '''Root widget that must be used for creating a presentation.
     '''
 
-    #: Current Slide to show
-    container1 = ObjectProperty(None)
+    #: Previous Slide showed
+    container = ObjectProperty(None)
 
     #: Previous Slide showed
-    container2 = ObjectProperty(None)
+    background = ObjectProperty(None)
 
     #: Index of the previous slide
     old_index = NumericProperty(-1)
@@ -181,6 +177,7 @@ class Slides(FloatLayout):
         Window.bind(on_keyboard=self.on_keyboard)
         Clock.schedule_interval(self.increase_time, 1 / 30.)
         Clock.schedule_once(self.init, 0)
+        self.add_widget(SlidesForeground(slides=self))
 
     def init(self, dt):
         index = self.index
@@ -189,6 +186,7 @@ class Slides(FloatLayout):
 
     def increase_time(self, dt):
         self.time += dt
+        self.background.time = self.time
 
     def on_keyboard(self, instance, scancode, *largs):
         # down
@@ -242,11 +240,11 @@ class Slides(FloatLayout):
         old_index = self.old_index
         if index == old_index:
             return
-        self.container2.clear_widgets()
-        self.container2.add_widget(self.slides[index])
+        self.container.clear_widgets()
+        self.container.add_widget(self.slides[index])
         d = 1. if index > old_index else -1.
-        self.container2.alpha = d
-        Animation(alpha=0., d=.3, t='out_quad').start(self.container2)
+        self.container.alpha = d
+        Animation(alpha=0., d=.3, t='out_quad').start(self.container)
         self.slides[index].active = True
 
 
